@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Data files & Caches (Do not push heavy tick data to Git)
+zero.csv
+*.npy
+*.npz
+*.csv
+zip/
+data/
+
+# Trained models & logs
+models/
+*.zip
+logs/
+tb_logs/
+runs/
+
+# Environments & IDEs
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.idea/
+.vscode/
+*.swp
+*.swo
