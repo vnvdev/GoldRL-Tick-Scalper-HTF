@@ -80,9 +80,11 @@ def open_trade_market(account, trade_type, entry_price, now_ms, cn, sl, tp, lots
 
 
 def close_trade_manual(account, trade, bid, ask, now_ms):
-    """Dong lenh som theo action cua agent (moi them, khong co trong ma goc).
-    Dung dung cong thuc PnL nhu process_open_trades, chi khac gia thoat la gia
-    thi truong hien tai thay vi sl/tp."""
+    """
+    Manually close an open position triggered by the agent's CLOSE action.
+    Uses exact PnL calculations identical to process_open_trades, executing against
+    current Level 1 market Bid/Ask prices instead of SL/TP triggers.
+    """
     entry   = trade.entry
     lotsize = trade.lotsize
     if trade.trade_type == 'buy':

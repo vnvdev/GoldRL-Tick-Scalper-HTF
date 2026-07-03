@@ -7,12 +7,13 @@
 ![Numba JIT](https://img.shields.io/badge/Numba-JIT%20Accelerated-00C853.svg?style=for-the-badge&logo=numba&logoColor=white)
 ![Stable-Baselines3](https://img.shields.io/badge/RL-Stable--Baselines3-E91E63.svg?style=for-the-badge)
 ![Gymnasium](https://img.shields.io/badge/API-Gymnasium-FF6F00.svg?style=for-the-badge)
-![License MIT](https://img.shields.io/badge/License-MIT-purple.svg?style=for-the-badge)
+![Built in Vietnam](https://img.shields.io/badge/Proudly%20Built%20in-Vietnam%20%F0%9F%87%B6%F0%9F%87%B3-red.svg?style=for-the-badge)
 
 *A world-class, ultra-fast Reinforcement Learning (RL) trading framework engineered specifically for tick-by-tick scalping on Gold (XAUUSD).*<br>
-*Built with JIT compilation, zero-copy shared memory mapping, and multi-timeframe sensor fusion.*
+*Built with JIT compilation, zero-copy shared memory mapping, and multi-timeframe sensor fusion.*<br>
+**Engineered by [Kudzo Vu](#-author--contact) (Vietnam Quant & Algorithmic Trading Developer)**
 
-[Key Features](#-key-features) • [Why Tick Scalping?](#-why-tick-scalping-vs-15m-bars) • [Architecture](#-repository-architecture) • [Quick Start](#-quick-start) • [Benchmarks](#-performance-benchmarks) • [Contributing](#-contributing)
+[Key Features](#-key-features) • [Why Tick Scalping?](#-why-tick-scalping-vs-15m-bars) • [Architecture](#-repository-architecture) • [Quick Start](#-quick-start) • [Benchmarks](#-performance-benchmarks) • [Author & Contact](#-author--contact)
 
 </div>
 
@@ -26,14 +27,15 @@ Most open-source algorithmic trading repositories for Reinforcement Learning rel
 
 > [!IMPORTANT]
 > **💎 99.99% Real Market Standard for Exness XAUUSD Zero Account**
-> Unlike simplified academic simulators, GoldRL is engineered specifically to match **99.99% real-world execution standards of the Exness XAUUSD Zero account**. It models exact institutional broker commissions ($0.11 per 0.01 lot / $11.00 per standard lot), dynamic risk-based lot sizing (e.g. risking exactly 3% of max account equity), floating tick-level unrealized PnL drag, and strict real-time Bid/Ask SL/TP triggering. **No other open-source reinforcement learning framework in the world achieves this level of real-market precision!**
+> Unlike simplified academic simulators, GoldRL is engineered specifically to match **99.99% real-world execution standards of the Exness XAUUSD Zero account**. It models exact institutional broker commissions (`$0.11 per 0.01 lot` / `$11.00 per standard lot`), dynamic risk-based lot sizing (risking exactly 3% of max account equity), floating tick-level unrealized PnL drag, and strict real-time Bid/Ask SL/TP triggering. **No other open-source reinforcement learning framework in the world achieves this level of institutional realism!**
 
 ---
 
 ## ✨ Key Features
 
-### 🚀 1. Zero-Copy Multiprocessing & Numba JIT Acceleration
-- **Zero-Copy Memory Mapping (`mmap_mode='r'`)**: Converts massive CSV datasets (40M+ ticks) into memory-mapped `.npy` caches. Dozens of parallel worker processes (`SubprocVecEnv`) share the exact same physical OS memory pages without RAM explosion.
+### 🚀 1. 60-Thread Parallel Downloader & Zero-Copy Multiprocessing
+- **Automated 60-Thread Tick Downloader (`get_data.py`)**: Fetches raw historical Level 1 tick archives directly from official Exness servers (`XAUUSD_Zero_Spread`), verifying existing files and merging millions of ticks with millisecond timestamp precision.
+- **Zero-Copy Memory Mapping (`mmap_mode='r'`)**: Converts massive CSV datasets (40M to 300M+ ticks) into memory-mapped `.npy` caches. Dozens of parallel worker processes (`SubprocVecEnv`) share the exact same physical OS memory pages without RAM explosion.
 - **JIT-Compiled Math (`@njit`)**: All heavy numerical computations, indicators, and historical lookbacks are compiled to native C-speed machine code using **Numba**.
 
 ### ⚡ 2. Multi-Timeframe Sensor Fusion (`TFWindow`)
@@ -72,7 +74,7 @@ goldrl/
 ├── README.md               # You are here!
 ├── requirements.txt        # Package dependencies
 ├── setup.py                # Installable Python package configuration
-├── get_data.py             # Utility script to generate synthetic ticks or format real data
+├── get_data.py             # High-speed 60-thread Exness tick downloader & compiler
 │
 ├── src/
 │   └── xau_rl_scalp/       # Core library package
@@ -101,7 +103,7 @@ pip install -e .
 ```
 
 ### 2. Download Real Exness XAUUSD Zero Tick Data
-Use our automated 60-thread parallel downloader (`get_data.py`) to fetch, extract, and merge real historical tick data directly from the official Exness Archive (`XAUUSD_Zero_Spread`):
+Use our automated 60-thread parallel downloader (`get_data.py`) to fetch, extract, and merge real historical tick data directly from official Exness servers (`XAUUSD_Zero_Spread`):
 ```bash
 python get_data.py
 ```
@@ -115,8 +117,8 @@ python examples/train_jonus_ppo.py
 During training, GoldRL displays a real-time institutional progress table:
 ```text
 [timestep 100000]
-  env0: tick 3500000/5000000 (70.0%) | so lenh: 142 | winrate 200 lenh gan nhat: 54.5% | winrate cong don: 53.2% | balance: 1045.20
-  env1: tick 3650000/5000000 (73.0%) | so lenh: 138 | winrate 200 lenh gan nhat: 56.0% | winrate cong don: 55.1% | balance: 1082.40
+  env0: tick 3500000/5000000 (70.0%) | trades: 142 | recent 200 winrate: 54.5% | cumulative winrate: 53.2% | balance: $1045.20
+  env1: tick 3650000/5000000 (73.0%) | trades: 138 | recent 200 winrate: 56.0% | cumulative winrate: 55.1% | balance: $1082.40
 ```
 
 ### 4. Evaluate & Backtest
@@ -133,6 +135,19 @@ Tested on an **Intel Xeon / AMD Threadripper workstation (44 Cores / 88 Threads,
 - **Throughput**: ~35,000 to 50,000 environment steps per second across 32 workers.
 - **Memory Efficiency**: 32 subprocess workers consuming `< 4GB RAM` total when processing a 300,000,000 tick dataset (~8GB disk cache) thanks to zero-copy OS memory mapping.
 - **Warmup Speed**: Synthesizes 3,000,000 lookback ticks across 4 timeframes in under `1.5 seconds` per worker.
+
+---
+
+## 👤 Author & Contact
+
+**Proudly built in Vietnam 🇻🇳 by Kudzo Vu**  
+*Quantitative Researcher & Algorithmic Trading Developer*
+
+We welcome collaboration, algorithmic discussions, and contributions from algorithmic traders and researchers worldwide! Feel free to connect with the author directly:
+
+- **Facebook**: [fb.com/kudzovu](https://facebook.com/kudzovu)
+- **Telegram**: [@kudzovu](https://t.me/kudzovu)
+- **GitHub**: [github.com/vnvdev](https://github.com/vnvdev)
 
 ---
 

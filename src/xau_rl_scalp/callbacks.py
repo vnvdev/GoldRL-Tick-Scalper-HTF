@@ -34,9 +34,9 @@ class TrainingProgressCallback(BaseCallback):
             if stats is None:
                 continue
             rows.append(
-                f"  env{idx}: tick {stats['i']}/{stats['df_len']} ({stats['pct']:.1f}%) | so lenh: {stats['total']} "
-                f"| winrate 200 lenh gan nhat: {stats['recent_wr']:.1f}% | winrate cong don: {stats['cum_wr']:.1f}% "
-                f"| balance: {stats['balance']:.2f}"
+                f"  env{idx}: tick {stats['i']}/{stats['df_len']} ({stats['pct']:.1f}%) | trades: {stats['total']} "
+                f"| recent 200 winrate: {stats['recent_wr']:.1f}% | cumulative winrate: {stats['cum_wr']:.1f}% "
+                f"| balance: ${stats['balance']:.2f}"
             )
             if idx == 0:
                 self.logger.record("custom/winrate_recent", stats["recent_wr"])

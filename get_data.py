@@ -1,3 +1,8 @@
+"""
+get_data.py - High-Performance 60-Thread Parallel Downloader for Real Exness XAUUSD Zero Spread Tick Data.
+Engineered by Kudzo Vu (Vietnam Quant & Algorithmic Trading Developer).
+"""
+
 import pandas as pd
 import requests
 import zipfile
@@ -9,21 +14,21 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import time
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# ── Configuration ─────────────────────────────────────────────────────────────
 START_DATE   = date(2026, 2, 1)
 OUTPUT_FILE  = 'zero.csv'
-SYMBOL_TYPE  = 'XAUUSD_Zero_Spread' ##XAUUSD_Standart_Plus, XAUUSD_Zero_Spread, XAUUSD, XAUUSDm, XAUUSD_Raw_Spread
-MAX_WORKERS  = 60        # network-bound => 64 luồng là điểm ngọt, tăng thêm không giúp nhiều
-SESSION_POOL = 60        # số requests.Session tái dùng
-RETRY_DELAY  = 3         # giây chờ giữa mỗi lần retry khi tải thất bại
-ZIP_DIR      = 'zip'     # thư mục lưu file zip
+SYMBOL_TYPE  = 'XAUUSD_Zero_Spread' # Options: XAUUSD_Standart_Plus, XAUUSD_Zero_Spread, XAUUSD, XAUUSDm, XAUUSD_Raw_Spread
+MAX_WORKERS  = 60        # Network-bound task => 60 workers is the sweet spot for maximum bandwidth utilization
+SESSION_POOL = 60        # Reusable requests.Session pool to eliminate TCP handshake overhead
+RETRY_DELAY  = 3         # Delay in seconds before retrying failed downloads
+ZIP_DIR      = 'zip'     # Local directory for caching raw ZIP archives
 # ─────────────────────────────────────────────────────────────────────────────
 
 current_date = date.today()
-print(f"Ngày hiện tại : {current_date}")
-print(f"Luồng tải     : {MAX_WORKERS}")
+print(f"Current Date      : {current_date}")
+print(f"Concurrent Workers: {MAX_WORKERS}")
 
-# Pool session để tránh tạo TCP connection mới mỗi request
+# Session pool to avoid opening new TCP connections for every HTTP request
 _sessions = [requests.Session() for _ in range(SESSION_POOL)]
 _session_lock = threading.Lock()
 _session_idx  = 0
@@ -37,6 +42,7 @@ def get_session() -> requests.Session:
 
 
 def normalize_to_ms(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize raw timestamps into millisecond-precision integer Unix timestamps."""
     if pd.api.types.is_numeric_dtype(df['time']):
         max_t = int(df['time'].max())
         if max_t > 10**14:
@@ -56,7 +62,7 @@ def normalize_to_ms(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def url_exists(url: str) -> bool:
-    """HEAD request để kiểm tra link có tồn tại không (HTTP 200/206)."""
+    """Send an HTTP HEAD request to verify if the archive exists (HTTP 200/206)."""
     try:
         session = get_session()
         resp = session.head(url, timeout=30, allow_redirects=True)
@@ -66,7 +72,7 @@ def url_exists(url: str) -> bool:
 
 
 def download_zip(url: str, filepath: str) -> bool:
-    """Tải 1 ZIP và lưu vào thư mục. Trả về True nếu thành công."""
+    """Download a single ZIP archive to disk. Returns True if successful."""
     try:
         session = get_session()
         resp = session.get(url, timeout=60, stream=True)
@@ -85,7 +91,7 @@ def download_zip(url: str, filepath: str) -> bool:
 
 
 def parse_zip(filepath: str) -> pd.DataFrame | None:
-    """Đọc file ZIP từ đĩa, parse CSV bên trong, trả về DataFrame. None nếu lỗi."""
+    """Read ZIP archive from disk, parse contained CSV, and return DataFrame. Returns None on error."""
     try:
         with zipfile.ZipFile(filepath) as z:
             csv_files = [f for f in z.namelist() if f.endswith('.csv')]
@@ -102,10 +108,10 @@ def parse_zip(filepath: str) -> pd.DataFrame | None:
 
 
 def build_url_list() -> list[tuple[str, str]]:
-    """Trả về list (url, label) cần tải."""
+    """Generate list of target (url, label) tuples for historical downloading."""
     urls = []
 
-    # Tháng đầy đủ: start_date → tháng trước tháng hiện tại
+    # Full monthly archives: start_date -> month prior to current month
     d = START_DATE
     end_monthly = current_date.replace(day=1)
     while d < end_monthly:
@@ -117,6 +123,7 @@ def build_url_list() -> list[tuple[str, str]]:
         urls.append((url, f"{y}-{m:02d}"))
         d += relativedelta(months=1)
 
+    # Daily archives for the current month up to today
     y, m = current_date.year, current_date.month
     for day in range(0, current_date.day + 1):
         url = (
@@ -128,7 +135,7 @@ def build_url_list() -> list[tuple[str, str]]:
     return urls
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# ── Main Execution ────────────────────────────────────────────────────────────
 os.makedirs(ZIP_DIR, exist_ok=True)
 url_list = build_url_list()
 
@@ -143,14 +150,14 @@ for url, label in url_list:
     else:
         pending_urls.append((url, filepath, label))
 
-print(f"Tổng số mốc thời gian: {len(url_list)}")
-print(f"Đã có sẵn trong '{ZIP_DIR}/': {len(valid_zips)}")
-print(f"Cần kiểm tra/tải: {len(pending_urls)}")
+print(f"Total Target Timestamps    : {len(url_list)}")
+print(f"Already Cached in '{ZIP_DIR}/': {len(valid_zips)}")
+print(f"Pending Verification/DL    : {len(pending_urls)}")
 
-# Bước 1: HEAD-check các url chưa có
+# Step 1: Concurrent HTTP HEAD checks for missing archives
 valid_urls_to_download = []
 if pending_urls:
-    print("\nKiểm tra link khả dụng (HEAD check)...")
+    print("\nVerifying available links via HTTP HEAD checks...")
     check_lock = threading.Lock()
     checked = 0
 
@@ -171,17 +178,17 @@ if pending_urls:
                 else:
                     print(f"  [{checked:>3}/{len(pending_urls)}] NOT FOUND {label}")
 
-    valid_urls_to_download.sort(key=lambda x: x[2]) # sort by label
-    print(f"\nLink khả dụng cần tải: {len(valid_urls_to_download)}")
+    valid_urls_to_download.sort(key=lambda x: x[2]) # Sort by timestamp label
+    print(f"\nValid Archives Ready for Download: {len(valid_urls_to_download)}")
 
-# Bước 2: Tải song song
+# Step 2: High-speed parallel downloading
 if valid_urls_to_download:
-    print("\nBắt đầu tải song song...")
+    print("\nStarting concurrent multi-threaded download...")
     lock = threading.Lock()
     done = 0
 
     def download_job(item):
-        """Tải file, retry liên tục cho đến khi thành công."""
+        """Download archive with persistent retry logic."""
         url, filepath, label = item
         attempt = 0
         while True:
@@ -189,7 +196,7 @@ if valid_urls_to_download:
             success = download_zip(url, filepath)
             if success:
                 return filepath, label, attempt
-            print(f"  [RETRY #{attempt}] {label} — tải thất bại, thử lại sau {RETRY_DELAY}s...")
+            print(f"  [RETRY #{attempt}] {label} — download failed, retrying in {RETRY_DELAY}s...")
             time.sleep(RETRY_DELAY)
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -199,13 +206,13 @@ if valid_urls_to_download:
             with lock:
                 done += 1
                 valid_zips.append((filepath, label))
-                attempt_str = f" (thử lần {attempt})" if attempt > 1 else ""
+                attempt_str = f" (Attempt {attempt})" if attempt > 1 else ""
                 print(f"  [{done:>3}/{len(valid_urls_to_download)}] DOWNLOADED {label}{attempt_str}")
 else:
-    print("\nKhông có file mới cần tải.")
+    print("\nNo new archives required for download.")
 
-# Bước 3: Đọc file zip từ đĩa và hợp nhất
-print(f"\nĐọc {len(valid_zips)} file ZIP và hợp nhất...")
+# Step 3: Extract, parse, and merge all ZIP archives into a unified CSV
+print(f"\nReading and parsing {len(valid_zips)} ZIP archives...")
 results: dict[str, pd.DataFrame] = {}
 read_lock = threading.Lock()
 read_done = 0
@@ -233,9 +240,9 @@ if all_frames:
     merged.sort_values('time', inplace=True)
     merged.reset_index(drop=True, inplace=True)
 
-    print(f"\nTổng ticks: {len(merged):,}")
-    print(f"Ghi ra {OUTPUT_FILE}...")
+    print(f"\nTotal Merged Ticks: {len(merged):,}")
+    print(f"Writing dataset to {OUTPUT_FILE}...")
     merged.to_csv(OUTPUT_FILE, index=False)
-    print("Hoàn tất.")
+    print("Done! Dataset is ready for high-frequency reinforcement learning training.")
 else:
-    print("\nKhông có dữ liệu để hợp nhất.")
+    print("\nNo data available to merge.")
