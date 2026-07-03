@@ -50,6 +50,12 @@ Most open-source algorithmic trading repositories for Reinforcement Learning rel
 ### 🧠 4. Proven Hyperparameter Suite
 - Integrates the industry-recognized neural network architecture (`MlpPolicy` with separate `[64, 64]` policy and value networks) and hyperparameter suite from [JonusNattapong's Gold Trading Research](https://github.com/JonusNattapong/Reinforcement-Learning-for-Gold-Trading), fine-tuned for high-frequency tick scalping.
 
+### 🌍 5. Universal Multi-Asset & Multi-Timeframe Engine (Forex, Crypto, Stocks & Any Broker)
+While pre-configured and benchmarked on Gold (XAUUSD), GoldRL's mathematical core is **100% asset-agnostic and universally scalable**:
+- **Any Financial Instrument**: Seamlessly train reinforcement learning models on **Bitcoin / Ethereum (Crypto), EURUSD / GBPUSD (Forex), S&P 500 / Nasdaq (Indices), or Apple / Tesla (Stocks)**!
+- **Tick or Candle Granularity**: Don't have Level 1 tick data? No problem! You can feed standard **M1 (1-minute) or M5 candlestick data** from Binance, MetaTrader, or Yahoo Finance directly into the multi-timeframe window engine!
+- **Any Broker Microstructure**: Customize `calculate_fee` and risk lot sizing parameters in `config.py` to simulate **thousands of account types across any broker worldwide** (e.g., Binance VIP tiers, Interactive Brokers, FTMO Prop Firms, Exness Standard/Raw, IC Markets, etc.).
+
 ---
 
 ## ⚔️ Why Tick Scalping vs. 15m Bars?
