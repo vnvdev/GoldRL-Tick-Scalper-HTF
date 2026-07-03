@@ -151,17 +151,28 @@ We welcome collaboration, algorithmic discussions, and contributions from algori
 
 ---
 
+## 🌐 Open Incubator: We Need Your Profitable Neural Networks & Breakthrough Ideas!
+
+**Our ultimate vision is to build an open, collaborative quantitative community where researchers, AI developers, and traders worldwide join forces to create genuinely profitable algorithmic trading AI.**
+
+We actively invite and challenge you to contribute:
+1. **🔥 Profitable Neural Network Architectures**: Have an innovative deep learning architecture that outperforms standard MLP policies? Submit Pull Requests with custom feature extractors, **Temporal Convolutional Networks (TCNs), LSTM / GRU hybrid networks, Transformer / Attention models, or Mamba state space models**! If your model proves consistently profitable on out-of-sample Exness Zero tick data, we will feature it in our official model suite!
+2. **💡 Breakthrough Quantitative Ideas**: Have ideas for novel reward shaping functions, order-flow imbalance (OFI) signals, micro-structure volatility indicators, or dynamic risk management algorithms? Share your concepts, open discussions, and let's experiment together!
+3. **📊 Out-of-Sample Benchmark Results**: Share your training logs, equity curves, and hyperparameter configurations to help elevate the global algorithmic trading community.
+
+---
+
 ## 🤝 Contributing
 
 We welcome pull requests from algorithmic traders, quantitative researchers, and machine learning engineers!
 1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingQuantFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingQuantFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingQuantFeature`)
-5. Open a Pull Request
+2. Create your Feature Branch (`git checkout -b feature/ProfitableQuantModel`)
+3. Commit your Changes (`git commit -m 'Add custom Transformer attention policy for XAUUSD'`)
+4. Push to the Branch (`git push origin feature/ProfitableQuantModel`)
+5. Open a Pull Request!
 
 ---
 
 <div align="center">
-<b>If you find GoldRL helpful for your research or algorithmic trading, please give it a ⭐ on GitHub!</b>
+<b>If you find GoldRL helpful for your research or algorithmic trading, please give it a ⭐ on GitHub and join our quant revolution!</b>
 </div>
